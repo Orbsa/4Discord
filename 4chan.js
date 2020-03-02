@@ -1,5 +1,20 @@
 const req =  require('request');
 
+function getBoardList(){
+  return new Promise((resolve, reject) => {
+    req(`https://a.4cdn.org/boards.json`, (err, res, body) => {
+      if (!err && res.statusCode == 200){
+        boards = []
+        jres = JSON.parse(body)
+        jres.boards.forEach(b => boards.push(b.board))
+        return resolve(boards)
+      } else if (!err && res.statusCode != 200){ return reject('Unable to query Board List') }
+      else return reject(err)
+    })
+})}
+
+
+
 // Returns list of Thread Numbers that match query
 function findThreads(board, query){
   return new Promise((resolve, reject) => {
@@ -9,12 +24,11 @@ function findThreads(board, query){
         if ((t.sub && t.sub.toLowerCase().includes(query)) ||
             (t.com && t.com.toLowerCase().includes(query))) { matches.push(t)}
       })
-      if (matches.length == 0) return reject('No Matches for '+query+' on board: '+board)
+      if (matches.length == 0) return reject('No Matches for /'+board+'/'+query)
       //console.log('Matches: '+ matches.length)
       resolve(matches)
     }).catch( err => { return reject(err) })
-  })
-}
+})}
 
 // Returns list of all threads on specified boardo
 function getCatalogue(board){
@@ -26,7 +40,7 @@ function getCatalogue(board){
           threads= threads.concat(x.threads) })
         return resolve(threads)
       }
-      else if (!err && res.statusCode == 404) return reject('Invalid  Board: '+ board)
+      else if (!err && res.statusCode == 404) return reject('Invalid  Board: /'+ board+'/')
       else{
         if (err) return reject(err)
         else return reject('Query for Board: '+board+' returned Status Code: '+res.statusCode)
@@ -39,7 +53,7 @@ function getThread(board, no){
     req(`https://a.4cdn.org/${board}/thread/${no}.json`, (err, res, body) => {
       if (!err && res.statusCode == 200) {
         return resolve(JSON.parse(body))
-      }else if (!err && res.statusCode == 404) return reject('Invalid  Board/thread: '+ board+'/'+no)
+      }else if (!err && res.statusCode == 404) return reject('Invalid  Board/thread: /'+ board+'/'+no)
       else return reject(err)
     })
   })
@@ -104,23 +118,42 @@ function getAllImages(board, threads) {
     })
 }
 
-function queryRandom(board, query) {
+function queryRandom(board, query=null) {
   return new Promise((resolve, reject) => {
-    findThreads(board, query).then(threads=>{
-      getAllImages(board ,threads)
-      .then(imgs =>{
-        return resolve(imgs[Math.floor(Math.random() * imgs.length)])
+    if (query){
+      findThreads(board, query).then(threads=>{
+        getAllImages(board ,threads)
+        .then(imgs =>{
+          return resolve(imgs[Math.floor(Math.random() * imgs.length)])
+        }).catch(err=>{
+          return reject(err)
+        })
       }).catch(err=>{
         return reject(err)
       })
-    }).catch(err=>{
-      return reject(err)
-    })
-  })
-}
+    } else{  // If no Query Specified, grab random image from random thread
+      //Get Catalogue
+      getCatalogue(board)
+      .then(cat=>{
+        //Chose Random Thread
+        thread = cat[Math.floor(Math.random() * cat.length)]
+        //Get All Images
+        getAllImages(board, thread)
+        .then(imgs =>{
+          return resolve(imgs[Math.floor(Math.random() * imgs.length)])
+        }).catch(err=>{
+          return reject(err)
+        })
+        //Choose Random Image
+      }).catch(err=>{
+        return reject(err)
+      })
+    }
+})}
 
 if (typeof require !== 'undefined' && require.main === module) {
-  queryRandom('gif','ylyl')
+  queryRandom('wsg')
+  //getBoardList()
   .then(img =>{
     console.log(img)
   }).catch(err=> console.log(err))
@@ -128,6 +161,7 @@ if (typeof require !== 'undefined' && require.main === module) {
 
 
 module.exports = {
+  getBoardList,
   findThreads,
   getAllImages,
   getCatalogue,
