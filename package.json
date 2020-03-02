@@ -1,0 +1,17 @@
+{
+  "name": "webm-bot",
+  "version": "1.0.0",
+  "description": "webm Grabber",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js"
+  },
+  "author": "orbsa",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^11.6.1",
+    "getenv": "^1.0.0",
+    "nodemon": "^2.0.2",
+    "request": "^2.88.2",
+  }
+}
