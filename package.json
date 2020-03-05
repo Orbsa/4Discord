@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",
-    "prod": "forever ./forever.json"
+    "prod": "forever ./config/forever.json"
   },
   "author": "orbsa",
   "license": "ISC",
