@@ -1,13 +1,12 @@
+#!/usr/bin/node
+
 const req =  require('request');
 
 function getBoardList(){
   return new Promise((resolve, reject) => {
     req(`https://a.4cdn.org/boards.json`, (err, res, body) => {
       if (!err && res.statusCode == 200){
-        boards = []
-        jres = JSON.parse(body)
-        jres.boards.forEach(b => boards.push(b.board))
-        return resolve(boards)
+        return resolve(JSON.parse(body).boards)
       } else if (!err && res.statusCode != 200){ return reject('Unable to query Board List') }
       else return reject(err)
     })
@@ -17,6 +16,7 @@ function getBoardList(){
 
 // Returns list of Thread Numbers that match query
 function findThreads(board, query){
+  query = query.toLowerCase()
   return new Promise((resolve, reject) => {
     getCatalogue(board).then( res => {
       matches = []
@@ -152,11 +152,15 @@ function queryRandom(board, query=null) {
 })}
 
 if (typeof require !== 'undefined' && require.main === module) {
-  queryRandom('wsg')
-  //getBoardList()
-  .then(img =>{
-    console.log(img)
-  }).catch(err=> console.log(err))
+  if (process.argv.length < 2) console.log('Needs some arguments')
+  else{
+    //getBoardList('wsg')
+    getBoardList()
+    .then(bL =>{
+      //console.log(bL)
+      console.log(bL.map(b=> [b.board,b.ws_board]))
+    }).catch(err=> console.log(err))
+  }
 }
 
 

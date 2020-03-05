@@ -16,11 +16,17 @@ client.on('message', message => {
   //const args = message.content.slice('/').split(/ +/);
   const content= message.content.split('/')
   if (content.length < 3 || content[0]!='4') return; // Syntax is 4/[board]/(query)
-  args = content.filter(x=>{ return x != '' }) // Filter out empty args
-  board = args[1]
-  if (!boardList.includes(board)) return // Don't do anything on invalid Board
+  args = content.filter(x=>{ return x != '' }) // Filter out empty args from split
+  boardCode = args[1].toLowerCase()
+  board = null
+  boards.forEach(b => {
+    if(b.board === boardCode) board=b
+  })
+  if (!board) return // Don't do anything on invalid Board
+  spoiler = false
+  if (message.channel.nsfw && !board.ws_board) spoiler = true //spoiler nsfw content on sfw channel
   query = args.slice(2).join(' ')
-  api.queryRandom(board, query)
+  api.queryRandom(boardCode, query)
   .then( img =>{
     message.reply(img)
   }).catch( err => {
@@ -29,4 +35,3 @@ client.on('message', message => {
 })
 
 client.login(config.token)
-
