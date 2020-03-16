@@ -1,6 +1,6 @@
 const Discord = require('discord.js')
 const config = require('./conf/config.js')
-const hishash = require('./modules/hishash')
+const userHash= require('./modules/userHash')
 const api = require('./modules/4chan')
 const client = new Discord.Client()
 
@@ -8,10 +8,11 @@ const client = new Discord.Client()
 boardList = []
 api.getBoardList().then(bL=> boardList= bL).catch(e=> console.log(e))
 // Setup hash table for history
-hisHash = new hishash.hisHash();
+qHash= new userHash.queryHash();
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`)
+  client.user.id
 })
 
 client.on('message', message => {
@@ -32,14 +33,14 @@ client.on('message', message => {
   })
   if (!board) return // Don't do anything on invalid Board
   spoiler = false
-  if (message.channel.nsfw && !board.ws_board) spoiler = true //spoiler nsfw content on sfw channel
+  if (message.channel.nsfw && !board.ws_board) spoiler = true // Spoiler nsfw content on sfw channel
   query = args.slice(2).join(' ')
   if (query == '') query = null
   api.queryRandom(boardCode, query)
   .then( img =>{
     message.reply(img).then( rep => {
-      // Add reply to hisHash
-      hisHash.put(message.author.id, [boardCode , query], rep) // TODO: Add source here
+      // Add reply to qHash
+      qHash.put(message.author.id, [boardCode , query], rep) // TODO: Add source here
       console.log(message.author.username + ' - ' + message.content)
       console.log(img)
     })
@@ -48,7 +49,12 @@ client.on('message', message => {
   })
 })
 
-client.login(config.token);
+// Reaction Handler to check for reroll reactions
+client.on('messageReactionAdd', (messageReaction, user) =>{
+  if(messageReaction.message.content != '4/reroll') return
+  if(user.id != messageReaction.message.author.id) return 
+  reroll(messageReaction.message)
+})
 
 function printHelp(message){
   message.channel.send("\n__Usage__:\n \
@@ -58,9 +64,9 @@ function printHelp(message){
 }
 
 function reroll(message){
-  let lastRep = hisHash.get(message.author.id)
+  let lastRep = qHash.get(message.author.id)
   if (lastRep == null){
-    console.log(`User: ${message.author.username} Attempted to grab empty item from hisHash`)
+    console.log(`User: ${message.author.username} Attempted to grab empty item from qHash`)
     return
   }
   api.queryRandom(lastRep.query[0], lastRep.query[1]).then( img => {
@@ -69,3 +75,6 @@ function reroll(message){
     message.reply(err)
   )
 }
+
+console.log('Connecting...');
+client.login(config.token)
