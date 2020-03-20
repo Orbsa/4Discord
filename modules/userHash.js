@@ -21,7 +21,7 @@ class userHash{
             if(item == undefined){
                 if(!write)return null
                 return key
-            }else if(item.userID == userID)return key 
+            }else if(item.userID == userID)return key
        } // If table Full
        if(write){
            delete this.table[hash] // Clear old value
@@ -45,7 +45,7 @@ class userHash{
    // Returns Query of hash table, or null if not found
    get(userID){
        let key = this.genKey(userID)
-       return key ? this.table[key] : null
+       return key !== null ? this.table[key] : null
    }
 }
 
@@ -61,7 +61,7 @@ class Query {
     constructor(userID, query, reply, source){
         this.userID = userID
         this.query = query
-        this.message= reply 
+        this.message= reply
         this.source = source // TODO: For adding source URL's
     }
 }
