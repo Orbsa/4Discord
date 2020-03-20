@@ -7,7 +7,7 @@ class userHash{
    // Hash algo bs
    hash(userID){
         userID =  parseInt(userID)
-        return (userID + (27 * userID%37)) % this.table.length
+        return (userID + (29 * userID%37)) % this.table.length
    }
 
    // Returns existing/new key

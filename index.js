@@ -22,7 +22,7 @@ client.on('message', message => {
   if (content.length <3 ) { // If possible command (e.g. 4/help || 4/reroll)
     if(content[1] == '' || content[1] == '?') printHelp(message)
     if(content[1] == 'reroll') reroll(message)
-    return; 
+    return;
   }
 
   args = content.filter(x=>{ return x != '' }) // Filter out empty args from split
@@ -52,7 +52,7 @@ client.on('message', message => {
 // Reaction Handler to check for reroll reactions
 client.on('messageReactionAdd', (messageReaction, user) =>{
   if(messageReaction.message.content != '4/reroll') return
-  if(user.id != messageReaction.message.author.id) return 
+  if(user.id != messageReaction.message.author.id) return
   reroll(messageReaction.message)
 })
 
@@ -65,7 +65,7 @@ function printHelp(message){
 
 function reroll(message){
   let lastRep = qHash.get(message.author.id)
-  if (lastRep == null){
+  if (lastRep === null){
     console.log(`User: ${message.author.username} Attempted to grab empty item from qHash`)
     return
   }
